@@ -3,106 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EMon-BHai | Text to Image Generator</title>
+  <title>EMon AI - Text to Image</title>
   <style>
     body {
-      background-color: #121212;
-      color: #fff;
+      margin: 0;
+      background: #111;
+      color: white;
       font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
-      text-align: center;
     }
-    input[type=text] {
+    input, button {
+      padding: 10px;
+      margin: 10px;
       width: 90%;
-      padding: 12px;
-      font-size: 18px;
-      border-radius: 10px;
+      max-width: 500px;
+      font-size: 16px;
+      border-radius: 8px;
       border: none;
-      margin-bottom: 10px;
     }
     button {
-      background-color: #00b894;
+      background: #28a745;
       color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 18px;
       cursor: pointer;
     }
-    .images {
+    .gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      width: 100%;
+      max-width: 800px;
       margin-top: 20px;
     }
-    .img-box {
-      background: #1e1e1e;
-      padding: 10px;
+    .card {
+      background: #222;
       border-radius: 10px;
-      position: relative;
+      padding: 10px;
+      text-align: center;
     }
-    .img-box img {
+    .card img {
       width: 100%;
       border-radius: 10px;
     }
     .download {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      background: #00cec9;
-      color: #000;
-      padding: 5px 10px;
-      border-radius: 5px;
+      margin-top: 5px;
+      display: inline-block;
+      color: #0f0;
       text-decoration: none;
-      font-weight: bold;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <h1>EMon-BHai | Text to Image Generator</h1>
-  <input type="text" id="prompt" placeholder="Enter your prompt here..." />
-  <br>
-  <button onclick="generateImage()">🎨 Generate Image</button>
+  <h1>🧠 EMon AI - Text to Image</h1>
+  <input type="text" id="prompt" placeholder="Enter your prompt (e.g. A boy walking in the rain...)" />
+  <button onclick="generateImages()">Generate Images</button>
 
-  <div class="images" id="imageArea"></div>
+  <div class="gallery" id="imageGallery"></div>
 
   <script>
-    async function generateImage() {
-      const prompt = document.getElementById('prompt').value;
-      const imageArea = document.getElementById('imageArea');
-      imageArea.innerHTML = '<p>⏳ Generating image...</p>';
+    async function generateImages() {
+      const prompt = document.getElementById('prompt').value.trim();
+      if (!prompt) return alert("Please enter a prompt!");
 
+      document.getElementById("imageGallery").innerHTML = "<p>Generating images...</p>";
+
+      const urls = await Promise.all([
+        fetchImage(prompt),
+        fetchImage(prompt),
+        fetchImage(prompt),
+        fetchImage(prompt)
+      ]);
+
+      document.getElementById("imageGallery").innerHTML = urls.map(url => `
+        <div class="card">
+          <img src="${url}" alt="AI Image" />
+          <a class="download" href="${url}" download>📥 Download</a>
+        </div>
+      `).join('');
+    }
+
+    async function fetchImage(prompt) {
       try {
-        const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1", {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer hf_YOUR_FREE_TOKEN_HERE",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ inputs: prompt })
-        });
-
-        if (!response.ok) throw new Error('Failed');
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-
-        imageArea.innerHTML = `
-          <div class="img-box">
-            <img src="${url}" alt="Generated Image">
-            <a href="${url}" download="image.png" class="download">📥</a>
-          </div>
-        `;
-      } catch (err) {
-        imageArea.innerHTML = '';
-        for (let i = 0; i < 4; i++) {
-          const dummy = `https://source.unsplash.com/400x300/?${encodeURIComponent(prompt)}`;
-          imageArea.innerHTML += `
-            <div class="img-box">
-              <img src="${dummy}" alt="Fallback Image">
-              <a href="${dummy}" download class="download">📥</a>
-            </div>
-          `;
-        }
+        const res = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`);
+        return res.url;
+      } catch (e) {
+        return 'https://via.placeholder.com/300x300?text=Error';
       }
     }
   </script>

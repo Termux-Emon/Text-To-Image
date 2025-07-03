@@ -1,121 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>EMon-BHai AI Photo Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    input, button {
-      padding: 12px;
-      font-size: 16px;
-      width: 90%;
-      max-width: 400px;
-      margin: 10px auto;
-      border-radius: 8px;
-      border: none;
-    }
-    button {
-      background: #00ffcc;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 15px;
-      margin-top: 30px;
-    }
-    .img-box {
-      background: #222;
-      border-radius: 10px;
-      padding: 10px;
-    }
-    img {
-      width: 100%;
-      border-radius: 8px;
-    }
-    .download-btn {
-      margin-top: 8px;
-      background: #00ff88;
-      color: black;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    #loading {
-      font-style: italic;
-      margin-top: 12px;
-    }
+    body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+    input, button { padding: 12px; font-size: 16px; width: 90%; max-width: 400px; margin: 10px 0; border-radius: 8px; border: none; }
+    button { background: #00ffcc; color: #000; font-weight: bold; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-top: 30px; }
+    .img-box { background: #222; border-radius: 10px; padding: 10px; }
+    img { width: 100%; border-radius: 8px; }
+    .download-btn { margin-top: 8px; background: #00ff88; color: black; padding: 6px 10px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+    #loading { font-style: italic; margin-top: 12px; }
   </style>
 </head>
 <body>
 
-  <h2>🎨 EMon-BHai Text ➜ AI Photo</h2>
-  <input type="text" id="prompt" placeholder="Describe your image (e.g. astronaut on Mars)">
+  <h2>🎨 EMon-BHai: 4 AI Images (DeepAI)</h2>
+  <input type="text" id="prompt" placeholder="Type prompt (e.g. lone astronaut on Mars with 'Emon' nebula)" />
   <br>
-  <button onclick="generateImages()">✨ Generate 4 Images</button>
+  <button onclick="generate()">Generate Images</button>
   <p id="loading"></p>
-  <div class="grid" id="imageGrid"></div>
+
+  <div class="grid" id="grid"></div>
 
   <script>
-    async function generateImages() {
+    async function generate() {
       const prompt = document.getElementById("prompt").value.trim();
       const loading = document.getElementById("loading");
-      const imageGrid = document.getElementById("imageGrid");
-      imageGrid.innerHTML = "";
-      if (!prompt) {
-        alert("Please enter a prompt!");
-        return;
-      }
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      if (!prompt) return alert("Please type a prompt!");
 
-      loading.textContent = "⏳ Generating... Please wait...";
-
-      const urls = [];
-
+      loading.textContent = "⏳ Generating...";
       for (let i = 0; i < 4; i++) {
-        const encoded = encodeURIComponent(prompt + " high quality, ultra detailed, masterpiece");
-        const url = `https://image.pollinations.ai/prompt/${encoded}?v=${Date.now() + i}`;
-        urls.push(url);
-      }
+        const res = await fetch("https://api.deepai.org/api/text2img", {
+          method: "POST",
+          headers: { "Api-Key": "quickstart-QUdJIGlzIGNvbWluZy4uLi4K" },
+          body: JSON.stringify({ text: prompt })
+        }).then(r => r.json()).catch(() => ({ err: true }));
 
-      urls.forEach((url, i) => {
+        const url = res.err ? "https://placehold.co/300x300?text=Error" : res.output_url;
+        
         const box = document.createElement("div");
         box.className = "img-box";
-
         const img = document.createElement("img");
         img.src = url;
-        img.alt = `Image ${i + 1}`;
-        img.onerror = () => {
-          img.src = "https://placehold.co/300x300?text=Image+Not+Available";
-        };
+        box.appendChild(img);
 
         const dl = document.createElement("button");
         dl.className = "download-btn";
-        dl.innerText = "📥 Download";
-        dl.onclick = () => {
-          const link = document.createElement("a");
-          link.href = img.src;
-          link.download = `emon_image_${i + 1}.jpg`;
-          link.click();
-        };
-
-        box.appendChild(img);
+        dl.textContent = "📥 Download";
+        dl.onclick = () => { const a = document.createElement("a"); a.href = url; a.download = `emon_img_${i+1}.jpg`; a.click(); };
         box.appendChild(dl);
-        imageGrid.appendChild(box);
-      });
 
+        grid.appendChild(box);
+      }
       loading.textContent = "";
     }
   </script>
-
 </body>
 </html>

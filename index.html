@@ -1,63 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>EMon-BHai AI Photo Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <title>EMon‑BhAI: 4 AI Photos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
-    input, button { padding: 12px; font-size: 16px; width: 90%; max-width: 400px; margin: 10px 0; border-radius: 8px; border: none; }
-    button { background: #00ffcc; color: #000; font-weight: bold; cursor: pointer; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-top: 30px; }
-    .img-box { background: #222; border-radius: 10px; padding: 10px; }
-    img { width: 100%; border-radius: 8px; }
-    .download-btn { margin-top: 8px; background: #00ff88; color: black; padding: 6px 10px; border-radius: 6px; font-size: 14px; cursor: pointer; }
-    #loading { font-style: italic; margin-top: 12px; }
+    body { background:#111; color:#eee; font-family:sans-serif; text-align:center; padding:20px; }
+    input, button { padding:10px; font-size:16px; border-radius:6px; border:none; width:90%; max-width:400px; margin:10px 0; }
+    button { background:#0ff; color:#000; font-weight:bold; cursor:pointer; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:15px; margin-top:30px;}
+    .box { background:#222; padding:10px; border-radius:8px; }
+    img { width:100%; border-radius:6px; }
+    .dl { margin-top:8px; background:#0f0; padding:6px 10px; border-radius:6px; cursor:pointer; }
+    #loading { font-style:italic; margin-top:12px; }
   </style>
 </head>
 <body>
-
-  <h2>🎨 EMon-BHai: 4 AI Images (DeepAI)</h2>
-  <input type="text" id="prompt" placeholder="Type prompt (e.g. lone astronaut on Mars with 'Emon' nebula)" />
+  <h2>🎨 EMon‑BhAI 4 AI Photos</h2>
+  <input id="prompt" placeholder="Your desired scene (e.g., astronaut on Mars, name 'Emon' in nebula)">
   <br>
-  <button onclick="generate()">Generate Images</button>
+  <button onclick="gen()">Generate 4 Images</button>
   <p id="loading"></p>
-
   <div class="grid" id="grid"></div>
 
   <script>
-    async function generate() {
-      const prompt = document.getElementById("prompt").value.trim();
-      const loading = document.getElementById("loading");
-      const grid = document.getElementById("grid");
-      grid.innerHTML = "";
-      if (!prompt) return alert("Please type a prompt!");
+    async function gen() {
+      const p = document.getElementById("prompt").value.trim();
+      const lg = document.getElementById("loading");
+      const gd = document.getElementById("grid");
+      gd.innerHTML = "";
+      if (!p) return alert("Prompt দিন ভাই!");
 
-      loading.textContent = "⏳ Generating...";
+      lg.innerText = "⏳ Generating...";
       for (let i = 0; i < 4; i++) {
         const res = await fetch("https://api.deepai.org/api/text2img", {
           method: "POST",
-          headers: { "Api-Key": "quickstart-QUdJIGlzIGNvbWluZy4uLi4K" },
-          body: JSON.stringify({ text: prompt })
-        }).then(r => r.json()).catch(() => ({ err: true }));
-
-        const url = res.err ? "https://placehold.co/300x300?text=Error" : res.output_url;
-        
-        const box = document.createElement("div");
-        box.className = "img-box";
-        const img = document.createElement("img");
-        img.src = url;
-        box.appendChild(img);
-
-        const dl = document.createElement("button");
-        dl.className = "download-btn";
-        dl.textContent = "📥 Download";
-        dl.onclick = () => { const a = document.createElement("a"); a.href = url; a.download = `emon_img_${i+1}.jpg`; a.click(); };
-        box.appendChild(dl);
-
-        grid.appendChild(box);
+          headers: {"Api-Key":"quickstart-QUdJIGlzIGNvbWluZy4uLi4K"},
+          body: JSON.stringify({text: p})
+        });
+        const j = await res.json();
+        const url = j.output_url || "https://placehold.co/300x300?text=Error";
+        const box = document.createElement("div"); box.className="box";
+        const img = document.createElement("img"); img.src = url;
+        const bt = document.createElement("button"); bt.className="dl"; bt.innerText="📥 Download";
+        bt.onclick = () => { const a=document.createElement("a"); a.href=url; a.download=`emon_${i+1}.jpg`; a.click(); };
+        box.append(img, bt);
+        gd.append(box);
       }
-      loading.textContent = "";
+      lg.innerText = "";
     }
   </script>
 </body>

@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>EMon-BHai AI Photo Gen</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EMon-BHai AI Photo Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background-color: #121212;
+      background: #111;
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
       text-align: center;
@@ -15,14 +15,14 @@
     input, button {
       padding: 12px;
       font-size: 16px;
-      margin: 10px;
-      border-radius: 8px;
-      border: none;
       width: 90%;
       max-width: 400px;
+      margin: 10px auto;
+      border-radius: 8px;
+      border: none;
     }
     button {
-      background: #00ffc3;
+      background: #00ffcc;
       color: #000;
       font-weight: bold;
       cursor: pointer;
@@ -31,12 +31,12 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 15px;
-      margin-top: 25px;
+      margin-top: 30px;
     }
-    .img-container {
-      background: #1e1e1e;
+    .img-box {
+      background: #222;
+      border-radius: 10px;
       padding: 10px;
-      border-radius: 12px;
     }
     img {
       width: 100%;
@@ -52,71 +52,70 @@
       cursor: pointer;
     }
     #loading {
-      margin-top: 12px;
       font-style: italic;
+      margin-top: 12px;
     }
   </style>
 </head>
 <body>
 
-<h2>🎨 Text ➜ 4 AI Images (Free & Fast)</h2>
-<input type="text" id="prompt" placeholder="Describe your image... (e.g. Lone astronaut on Mars)">
-<br>
-<button onclick="generateImages()">✨ Generate Images</button>
-<p id="loading"></p>
+  <h2>🎨 EMon-BHai Text ➜ AI Photo</h2>
+  <input type="text" id="prompt" placeholder="Describe your image (e.g. astronaut on Mars)">
+  <br>
+  <button onclick="generateImages()">✨ Generate 4 Images</button>
+  <p id="loading"></p>
+  <div class="grid" id="imageGrid"></div>
 
-<div class="grid" id="imageGrid"></div>
+  <script>
+    async function generateImages() {
+      const prompt = document.getElementById("prompt").value.trim();
+      const loading = document.getElementById("loading");
+      const imageGrid = document.getElementById("imageGrid");
+      imageGrid.innerHTML = "";
+      if (!prompt) {
+        alert("Please enter a prompt!");
+        return;
+      }
 
-<script>
-  async function generateImages() {
-    const prompt = document.getElementById("prompt").value.trim();
-    const loading = document.getElementById("loading");
-    const grid = document.getElementById("imageGrid");
-    grid.innerHTML = "";
-    loading.textContent = "⏳ Generating 4 images... Please wait.";
+      loading.textContent = "⏳ Generating... Please wait...";
 
-    if (!prompt) {
-      alert("❗ Please enter a prompt.");
-      return;
+      const urls = [];
+
+      for (let i = 0; i < 4; i++) {
+        const encoded = encodeURIComponent(prompt + " high quality, ultra detailed, masterpiece");
+        const url = `https://image.pollinations.ai/prompt/${encoded}?v=${Date.now() + i}`;
+        urls.push(url);
+      }
+
+      urls.forEach((url, i) => {
+        const box = document.createElement("div");
+        box.className = "img-box";
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = `Image ${i + 1}`;
+        img.onerror = () => {
+          img.src = "https://placehold.co/300x300?text=Image+Not+Available";
+        };
+
+        const dl = document.createElement("button");
+        dl.className = "download-btn";
+        dl.innerText = "📥 Download";
+        dl.onclick = () => {
+          const link = document.createElement("a");
+          link.href = img.src;
+          link.download = `emon_image_${i + 1}.jpg`;
+          link.click();
+        };
+
+        box.appendChild(img);
+        box.appendChild(dl);
+        imageGrid.appendChild(box);
+      });
+
+      loading.textContent = "";
     }
-
-    const encodedPrompt = encodeURIComponent(prompt);
-    const sources = [
-      `https://image.pollinations.ai/prompt/${encodedPrompt}`, // Main
-      `https://api.limewire.com/api/image/generation?prompt=${encodedPrompt}`, // Backup
-      `https://imagegen.surelyhuman.art/api/prompt/${encodedPrompt}`, // Fast fallback
-      `https://artificial-intelligence-api.vercel.app/image/${encodedPrompt}` // Extra
-    ];
-
-    for (let i = 0; i < 4; i++) {
-      const container = document.createElement("div");
-      container.className = "img-container";
-
-      const img = document.createElement("img");
-      img.alt = `Image ${i+1}`;
-      img.src = sources[i % sources.length] + `&t=${Date.now() + i}`; // prevent caching
-      img.onerror = () => {
-        img.src = "https://placehold.co/300x300?text=No+Image";
-      };
-
-      const downloadBtn = document.createElement("button");
-      downloadBtn.className = "download-btn";
-      downloadBtn.textContent = "📥 Download";
-      downloadBtn.onclick = () => {
-        const link = document.createElement("a");
-        link.href = img.src;
-        link.download = `emon_ai_${i + 1}.jpg`;
-        link.click();
-      };
-
-      container.appendChild(img);
-      container.appendChild(downloadBtn);
-      grid.appendChild(container);
-    }
-
-    loading.textContent = "";
-  }
-</script>
+  </script>
 
 </body>
 </html>

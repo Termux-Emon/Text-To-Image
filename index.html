@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>EMon-BHai - Text to Image</title>
+  <meta charset="UTF-8" />
+  <title>EMon-BHai Text to Image (4x)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      background: #0d0d0d;
+      background: #121212;
       color: #fff;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 40px;
+      padding: 20px;
     }
     input, button {
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
       border-radius: 8px;
-      margin: 10px;
-      border: none;
-      width: 80%;
+      margin: 10px 0;
+      width: 90%;
       max-width: 400px;
+      border: none;
     }
     button {
       background: #00ccff;
@@ -26,67 +27,84 @@
       font-weight: bold;
       cursor: pointer;
     }
-    img {
-      margin-top: 20px;
-      max-width: 90%;
-      border-radius: 15px;
-      box-shadow: 0 0 25px rgba(0,255,255,0.4);
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 25px;
     }
-    #downloadBtn {
-      display: none;
-      margin-top: 10px;
+    .img-container {
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,255,255,0.2);
+    }
+    .img-container img {
+      width: 100%;
+      border-radius: 8px;
+    }
+    .download-btn {
       background: #00ff99;
+      color: #000;
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    #loading {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>🎨 EMon-BHai Text to Image AI</h1>
-  <input type="text" id="prompt" placeholder="A boy walking alone in the rain" />
+  <h1>🎨 EMon-BHai Text ➜ 4 AI Photos</h1>
+  <input type="text" id="prompt" placeholder="Describe your image..." />
   <br>
-  <button onclick="generateImage()">Generate</button>
-  <p id="loading" style="margin-top: 20px;"></p>
-  
-  <img id="result" style="display:none;" />
-  <br>
-  <button id="downloadBtn" onclick="downloadImage()">📥 Download Image</button>
+  <button onclick="generateImages()">Generate 4 Images</button>
+  <p id="loading"></p>
+
+  <div class="grid" id="imageGrid"></div>
 
   <script>
-    async function generateImage() {
-      const prompt = document.getElementById("prompt").value;
-      const resultImg = document.getElementById("result");
+    async function generateImages() {
+      const prompt = document.getElementById("prompt").value.trim();
       const loading = document.getElementById("loading");
-      const downloadBtn = document.getElementById("downloadBtn");
+      const grid = document.getElementById("imageGrid");
+      grid.innerHTML = "";
+      loading.textContent = "⏳ Generating images...";
 
       if (!prompt) {
-        alert("❗Please enter a prompt.");
+        alert("❗ Please enter a prompt.");
         return;
       }
 
-      loading.innerText = "⏳ Generating image...";
-      resultImg.style.display = "none";
-      downloadBtn.style.display = "none";
+      const baseUrl = "https://image.pollinations.ai/prompt/";
+      const promptEncoded = encodeURIComponent(prompt);
+      const imgUrls = Array.from({ length: 4 }, (_, i) => `${baseUrl}${promptEncoded} ${i}`);
 
-      try {
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-        const response = await fetch(url);
-        resultImg.src = response.url;
-        resultImg.onload = () => {
-          loading.innerText = "✅ Image Generated!";
-          resultImg.style.display = "block";
-          downloadBtn.style.display = "inline-block";
-          downloadBtn.setAttribute("data-url", response.url);
+      for (let i = 0; i < imgUrls.length; i++) {
+        const container = document.createElement("div");
+        container.className = "img-container";
+
+        const img = document.createElement("img");
+        img.src = imgUrls[i];
+        img.alt = `AI Image ${i + 1}`;
+        img.onload = () => loading.textContent = "";
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.className = "download-btn";
+        downloadBtn.textContent = "📥 Download";
+        downloadBtn.onclick = () => {
+          const link = document.createElement('a');
+          link.href = img.src;
+          link.download = `emon-ai-img-${i + 1}.jpg`;
+          link.click();
         };
-      } catch (e) {
-        loading.innerText = "❌ Error generating image.";
-      }
-    }
 
-    function downloadImage() {
-      const url = document.getElementById("downloadBtn").getAttribute("data-url");
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = "emon-ai-image.jpg";
-      link.click();
+        container.appendChild(img);
+        container.appendChild(downloadBtn);
+        grid.appendChild(container);
+      }
     }
   </script>
 </body>

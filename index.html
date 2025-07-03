@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EMon AI - Text to Image</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    input, button {
+      padding: 12px;
+      width: 300px;
+      border-radius: 8px;
+      margin: 10px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background: #00c6ff;
+      color: white;
+      cursor: pointer;
+    }
+    img {
+      margin-top: 30px;
+      max-width: 90%;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 EMon-BHai Text to Image AI</h1>
+  <p>Write any scene below to generate a photo</p>
+
+  <input type="text" id="promptInput" placeholder="A girl walking in the rain..." />
+  <br>
+  <button onclick="generateImage()">Generate Image</button>
+
+  <div id="result">
+    <p id="statusText"></p>
+    <img id="imageResult" style="display:none;" />
+  </div>
+
+  <script>
+    async function generateImage() {
+      const prompt = document.getElementById("promptInput").value;
+      const status = document.getElementById("statusText");
+      const img = document.getElementById("imageResult");
+
+      if (!prompt) {
+        alert("Please enter a prompt!");
+        return;
+      }
+
+      status.innerText = "⏳ Generating image... Please wait...";
+      img.style.display = "none";
+
+      // Using Hugging Face public inference API (no API key needed)
+      const response = await fetch("https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ inputs: prompt })
+      });
+
+      if (!response.ok) {
+        status.innerText = "❌ Failed to generate image. Try again later.";
+        return;
+      }
+
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+
+      img.src = imageUrl;
+      img.style.display = "block";
+      status.innerText = "✅ Image generated!";
+    }
+  </script>
+</body>
+</html>
